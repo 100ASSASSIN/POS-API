@@ -2,6 +2,30 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ProductController;
+
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware('auth:api')->group(function () {
+
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::middleware('role:admin,manager')->group(function () {
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::put('/products/{id}', [ProductController::class, 'update']);
+    });
+
+    Route::middleware('role:admin')->group(function () {
+        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    });
+
+    Route::middleware('role:admin,manager,cashier')->group(function () {
+        Route::get('/products', [ProductController::class, 'index']);
+    });
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +38,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
