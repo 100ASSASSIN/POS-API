@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -12,30 +14,41 @@ class AuthController extends Controller
     {
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required'
         ]);
 
-        if (!$token = Auth::attempt($credentials)) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
+        if (! $token = auth('api')->attempt($credentials)) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'user' => Auth::user(),
-        ]);
+        return response()
+            ->json([
+                'user' => auth('api')->user()
+            ])
+            ->cookie(
+                'access_token',
+                $token,
+                60,
+                '/',
+                null,
+                false,
+                true,
+                false,
+                'Strict'
+            );
     }
 
     public function me()
     {
-        return response()->json(Auth::user());
+        return response()->json(auth('api')->user());
     }
 
     public function logout()
     {
-        Auth::logout();
-        return response()->json(['message' => 'Logged out']);
+        auth('api')->logout();
+
+        return response()
+            ->json(['message' => 'Logged out'])
+            ->cookie('access_token', '', -1);
     }
 }
