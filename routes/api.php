@@ -1,16 +1,21 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\UserController;
+
 
 /*
 |--------------------------------------------------------------------------
 | Public Route
 |--------------------------------------------------------------------------
 */
+
 Route::middleware('api.key')->post('/login', [AuthController::class, 'login']);
 
 /*
@@ -33,10 +38,10 @@ Route::middleware(['api.key', 'auth:api'])->group(function () {
     // Products (Admin & Manager)
     Route::middleware('role:admin,manager')->group(function () {
         Route::post('/products/{id}', [ProductController::class, 'update']);
-        });
+    });
 
-        // Products (Admin only)
-        Route::middleware('role:admin')->group(function () {
+    // Products (Admin only)
+    Route::middleware('role:admin')->group(function () {
         Route::post('/products', [ProductController::class, 'store']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     });
@@ -46,16 +51,30 @@ Route::middleware(['api.key', 'auth:api'])->group(function () {
         Route::get('/products', [ProductController::class, 'index']);
     });
 
-        // Orders (Cashier, Manager, Admin)
+    // Orders (Cashier, Manager, Admin)
     Route::middleware('role:admin,manager,cashier')->group(function () {
         Route::post('/orders', [OrderController::class, 'store']);
     });
 
-        Route::middleware('role:admin,manager')->group(function () {
+    Route::middleware('role:admin,manager')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
     });
-});
 
+    Route::middleware('role:admin,manager,cashier')->group(function () {
+        Route::get('/customers', [CustomerController::class, 'index']);
+    });
+
+    Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::post('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    });
+
+    // Route::middleware('role:manager')->group(function () {
+    //     Route::get('/users', [UserController::class, 'index']);
+    // });
+});
 
 
 /*
