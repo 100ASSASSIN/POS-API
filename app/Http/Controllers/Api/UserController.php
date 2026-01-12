@@ -34,6 +34,11 @@ class UserController extends Controller
             'role'          => 'required|in:manager,cashier',
             'status'        => 'required|boolean',
             'profile_image' => 'nullable|image|max:2048',
+            'company_name'  => 'nullable|string|max:255',
+            'location'      => 'nullable|string|max:255',
+            'phone'         => 'nullable|string|max:20',
+            'gst_number'    => 'nullable|string|max:50',
+            'website'       => 'nullable|url|max:255',
         ]);
 
         $base64Image = null;
@@ -57,6 +62,11 @@ class UserController extends Controller
             'status'             => $request->status,
             'profile_image'      => $base64Image,
             'default_role_route' => $defaultRoute,
+            'company_name'       => $request->company_name,
+            'location'           => $request->location,
+            'phone'              => $request->phone,
+            'gst_number'         => $request->gst_number,
+            'website'            => $request->website,
         ]);
 
         return response()->json([
@@ -80,6 +90,11 @@ class UserController extends Controller
             'status'        => 'required|boolean',
             'password'      => 'nullable|min:6',
             'profile_image' => 'nullable|image|max:2048',
+            'company_name'  => 'nullable|string|max:255',
+            'location'      => 'nullable|string|max:255',
+            'phone'         => 'nullable|string|max:20',
+            'gst_number'    => 'nullable|string|max:50',
+            'website'       => 'nullable|url|max:255',
         ]);
 
         if ($request->hasFile('profile_image')) {
@@ -95,12 +110,17 @@ class UserController extends Controller
             'role'               => $request->role,
             'status'             => $request->status,
             'password'           => $request->password
-                                    ? Hash::make($request->password)
-                                    : $user->password,
+                ? Hash::make($request->password)
+                : $user->password,
             'default_role_route' => match ($request->role) {
                 'manager' => '/manager',
                 'cashier' => '/cashier',
             },
+            'company_name'       => $request->company_name,
+            'location'           => $request->location,
+            'phone'              => $request->phone,
+            'gst_number'         => $request->gst_number,
+            'website'            => $request->website,
         ]);
 
         return response()->json([
