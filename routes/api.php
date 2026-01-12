@@ -3,6 +3,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,18 +32,27 @@ Route::middleware(['api.key', 'auth:api'])->group(function () {
 
     // Products (Admin & Manager)
     Route::middleware('role:admin,manager')->group(function () {
-        Route::post('/products', [ProductController::class, 'store']);
-        Route::put('/products/{id}', [ProductController::class, 'update']);
-    });
+        Route::post('/products/{id}', [ProductController::class, 'update']);
+        });
 
-    // Products (Admin only)
-    Route::middleware('role:admin')->group(function () {
+        // Products (Admin only)
+        Route::middleware('role:admin')->group(function () {
+        Route::post('/products', [ProductController::class, 'store']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     });
 
     // Products (All roles)
     Route::middleware('role:admin,manager,cashier')->group(function () {
         Route::get('/products', [ProductController::class, 'index']);
+    });
+
+        // Orders (Cashier, Manager, Admin)
+    Route::middleware('role:admin,manager,cashier')->group(function () {
+        Route::post('/orders', [OrderController::class, 'store']);
+    });
+
+        Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index']);
     });
 });
 

@@ -11,16 +11,22 @@ class MenuController extends Controller
     {
         $role = $request->user()->role;
 
-        $menus = Menu::whereNull('parent_id')  // Top-level menus
-            ->whereHas('roles', fn ($q) => $q->where('role', $role))
+        $menus = Menu::whereNull('parent_id')          // Top-level menus
+            ->where('is_active', 1)                    // Only active menus
+            ->whereHas('roles', function ($q) use ($role) {
+                $q->where('role', $role);
+            })
             ->with(['children' => function ($q) use ($role) {
-                $q->whereHas('roles', fn ($q2) => $q2->where('role', $role))
+                $q->where('is_active', 1)              // Only active children
+                  ->whereHas('roles', function ($q2) use ($role) {
+                      $q2->where('role', $role);
+                  })
                   ->orderBy('sort_order');
             }])
-            ->orderBy('sort_order')  // Top-level order
+            ->orderBy('sort_order')
             ->get()
             ->map(function ($menu) {
-                // Remove children if empty
+                // Remove empty children relation
                 if ($menu->children->isEmpty()) {
                     $menu->unsetRelation('children');
                 }

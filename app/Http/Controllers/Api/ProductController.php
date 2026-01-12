@@ -26,42 +26,82 @@ class ProductController extends Controller
     /**
      * Create product (Admin, Manager only)
      */
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name'  => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-        ]);
+public function store(Request $request)
+{
+    // Validate request
+    $data = $request->validate([
+        'category_id'   => 'required|exists:categories,id',
+        'name'          => 'required|string|max:255',
+        'price'         => 'required|numeric|min:0',
+        'stock'         => 'required|integer|min:0',
+        'sku'           => 'required|string|max:255|unique:products,sku',
+        'status'        => 'required|in:active,inactive',
+        'tax'         => 'nullable|numeric|min:0',
+        'location'    => 'nullable|string|max:255',
+        'description' => 'nullable|string',
+        'product_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,avif|max:5048',
+    ]);
 
-        $product = Product::create($data);
+    // Convert status string to boolean
+    $data['status'] = $data['status'] === 'active' ? 1 : 0;
 
-        return response()->json([
-            'message' => 'Product created successfully',
-            'product' => $product
-        ], 201);
+    // Handle image upload
+     // If a new image is uploaded, convert to Base64
+    if ($request->hasFile('product_image')) {
+        $imageFile = $request->file('product_image');
+        $imageContents = file_get_contents($imageFile->getRealPath());
+        $base64Image = 'data:' . $imageFile->getMimeType() . ';base64,' . base64_encode($imageContents);
+        $data['product_image'] = $base64Image;
     }
+
+    // Create product
+    $product = Product::create($data);
+
+    return response()->json([
+        'message' => 'Product created successfully',
+        'product' => $product,
+    ], 201);
+}
+
 
     /**
      * Update product (Admin, Manager only)
      */
-    public function update(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
+public function update(Request $request, $id)
+{
+    $product = Product::findOrFail($id);
 
-        $data = $request->validate([
-            'name'  => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-        ]);
+    // Validate request
+    $data = $request->validate([
+        'category_id'   => 'required|exists:categories,id',
+        'name'          => 'required|string|max:255',
+        'price'         => 'required|numeric|min:0',
+        'stock'         => 'required|integer|min:0',
+        'sku'           => 'required|string|max:255|unique:products,sku,' . $id,
+        'status'        => 'required|in:active,inactive',
+        'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,avif|max:5048',
+        'tax'         => 'nullable|numeric|min:0',
+        'description' => 'nullable|string',
+        'location'    => 'nullable|string|max:255',
+    ]);
 
-        $product->update($data);
-
-        return response()->json([
-            'message' => 'Product updated successfully',
-            'product' => $product
-        ]);
+    // If a new image is uploaded, convert to Base64
+    if ($request->hasFile('product_image')) {
+        $imageFile = $request->file('product_image');
+        $imageContents = file_get_contents($imageFile->getRealPath());
+        $base64Image = 'data:' . $imageFile->getMimeType() . ';base64,' . base64_encode($imageContents);
+        $data['product_image'] = $base64Image;
     }
+
+    $product->update($data);
+
+    return response()->json([
+        'message' => 'Product updated successfully',
+        'product' => $product
+    ]);
+}
+
+
 
     /**
      * Delete product (Admin only)
