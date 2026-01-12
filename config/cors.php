@@ -6,7 +6,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://www.austrounityshop.in'],
+    'allowed_origins' => ['*'],
 
     'allowed_origins_patterns' => [],
 
@@ -19,3 +19,4 @@ return [
     'supports_credentials' => true,
 
 ];
+
